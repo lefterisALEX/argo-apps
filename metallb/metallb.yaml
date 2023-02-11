@@ -1,22 +1,4 @@
-apiVersion: metallb.io/v1beta1
-kind: IPAddressPool
-metadata:
-  name: pool-home-rg
-  namespace: metallb-system
-spec:
-  addresses:
-  - 192.168.2.200-192.168.2.245
-
 ---
-
-apiVersion: metallb.io/v1beta1
-kind: L2Advertisement
-metadata:
-  name: pool-home-rg
-  namespace: metallb-system
-
----
-
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -24,23 +6,11 @@ metadata:
   namespace: argocd
 spec:
   destination:
-    namespace: sealed-secrets
+    namespace: ingress
     server: https://kubernetes.default.svc
-  project: home
+  project: core-services-unrestricted
   syncPolicy: {}
   source:
-    chart: sealed-secrets
-    repoURL: https://bitnami-labs.github.io/sealed-secrets
-    targetRevision: 2.6.0
-    helm:
-      version: v3
-      values: |-
-        ingress:
-          enabled: false
-        resources:
-          limits:
-            cpu: 100m
-            memory: 100Mi
-          requests:
-            cpu: 100m
-            memory: 100Mi
+    chart: metallb
+    repoURL: https://charts.bitnami.com/bitnami
+    targetRevision: 4.1.14
