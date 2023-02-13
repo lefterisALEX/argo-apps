@@ -19,5 +19,5 @@ spec:
   syncPolicy: {}
   source:
     chart: metallb
-    repoURL: https://charts.bitnami.com/bitnami
-    targetRevision: 4.1.14
+    repoURL: https://metallb.github.io/metallb
+    targetRevision: 0.13.7
