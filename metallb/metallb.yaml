@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: metallb
+  name: metallb-system
   annotations:
     argocd.argoproj.io/sync-wave: "-10"  
 
@@ -10,7 +10,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: metallb
-  namespace: metallb
+  namespace: metallb-system
 spec:
   destination:
     namespace: ingress
