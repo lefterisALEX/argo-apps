@@ -15,7 +15,7 @@ spec:
   destination:
     namespace: metallb-system
     server: https://kubernetes.default.svc
-  project: core-services-unrestricted
+  project: home
   syncPolicy: {}
   source:
     chart: metallb

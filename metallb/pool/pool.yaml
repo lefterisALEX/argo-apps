@@ -4,8 +4,7 @@ metadata:
   name: pool-home-rg
   namespace: metallb-system
   annotations:
-    argocd.argoproj.io/sync-wave: "+5"  
-
+    argocd.argoproj.io/sync-wave: "+5"
 spec:
   addresses:
   - 192.168.2.200-192.168.2.245
