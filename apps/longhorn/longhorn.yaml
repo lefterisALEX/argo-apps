@@ -1,0 +1,46 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: longhorn
+  namespace: argocd
+spec:
+  destination:
+    namespace: longhorn-system
+    server: https://kubernetes.default.svc
+  project: home
+  syncPolicy: {}
+  source:
+    chart: longhorn
+    repoURL: https://charts.longhorn.io
+    targetRevision: 1.3.2
+    helm:
+      version: v3
+      values: |-
+        service:
+          ui:
+            type: LoadBalancer
+            nodePort: null
+          manager:
+            type: ClusterIP
+            nodePort: ""
+
+        persistence:
+          defaultClass: true
+          defaultFsType: ext4
+          defaultClassReplicaCount: 2
+          reclaimPolicy: Delete
+          recurringJobSelector:
+            enable: false
+            jobList: []
+          backingImage:
+            enable: false
+            name: ~
+            dataSourceType: ~
+            dataSourceParameters: ~
+            expectedChecksum: ~
+
+        defaultSettings:
+          defaultDataPath: "/data"
+          backupTargetCredentialSecret: "aws-secret" 
+          backupTarget: "s3://generic.backup@eu-central-1/longhorn-k3s-home/"
