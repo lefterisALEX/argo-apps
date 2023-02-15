@@ -12,7 +12,8 @@ spec:
     namespace: kube-system
     server: https://kubernetes.default.svc
   project: home
-  syncPolicy: {}
+  syncPolicy:
+    - Replace=true # needed to update CRD
   source:
     chart: kube-prometheus-stack
     repoURL: https://prometheus-community.github.io/helm-charts
