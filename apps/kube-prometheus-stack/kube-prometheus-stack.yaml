@@ -1,0 +1,92 @@
+#https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"  
+spec:
+  destination:
+    namespace: kube-system
+    server: https://kubernetes.default.svc
+  project: home
+  syncPolicy: {}
+  source:
+    chart: kube-prometheus-stack
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 38.0.3
+    helm:
+      version: v3
+      values: |-
+          prometheus:
+            ingress:
+              enabled: true
+              ingressClassName: nginx
+              annotations: {}
+                # kubernetes.io/ingress.class: nginx
+                # kubernetes.io/tls-acme: "true"
+              labels: {}
+              hosts:
+                - prometheus.home
+              path: /
+            prometheusSpec:
+              additionalScrapeConfigs:
+              - job_name: iotstack
+                metrics_path: /metrics
+                static_configs:
+                  - targets:
+                    - 192.168.2.100:9100
+              - job_name: home_laptop
+                metrics_path: /metrics
+                static_configs:
+                  - targets:
+                    - 192.168.2.35:9100
+          alertmanager:
+            ingress:
+              enabled: true
+              ingressClassName: nginx
+              annotations: {}
+                # kubernetes.io/ingress.class: nginx
+                # kubernetes.io/tls-acme: "true"
+              labels: {}
+              hosts:
+                - alertmanager.home
+              path: /
+            config:
+              receivers:
+              - name: "null"
+              - name: slack
+                slack_configs:
+                - api_url: "${var.slack_url}"
+                  send_resolved: true
+                  title: "k3s-at-home"
+              route:
+                group_by: ['alertname']
+                group_wait: 45s 
+                group_interval: 10m
+                repeat_interval: 12h
+                routes:
+                - receiver: slack
+                  continue: true
+                  matchers:
+                  - severity="critical" 
+          grafana:
+            enabled: true
+            namespaceOverride: ""
+            forceDeployDatasources: false
+            forceDeployDashboards: false
+            defaultDashboardsEnabled: true
+            defaultDashboardsTimezone: cest
+            adminPassword: prom-operator
+            ingress:
+              enabled: true
+              ingressClassName: nginx
+              annotations: {}
+                # kubernetes.io/ingress.class: nginx
+                # kubernetes.io/tls-acme: "true"
+              labels: {}
+              hosts:
+                - grafana.home
+              path: /
