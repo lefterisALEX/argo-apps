@@ -1,0 +1,28 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: influxdb
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"  
+spec:
+  destination:
+    namespace: influxdb
+    server: https://kubernetes.default.svc
+  project: home
+  syncPolicy: {}
+  source:
+    chart: influxdb2
+    repoURL: https://helm.influxdata.com
+    targetRevision: 2.1.1
+    helm:
+      version: v3
+      values: |-
+          image:
+            repository: influxdb
+            tag: "2.2.0"
+          service:
+            type: LoadBalancer
+          persistence:
+            enabled: true
