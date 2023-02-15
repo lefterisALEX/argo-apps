@@ -8,7 +8,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "10"  
 spec:
   destination:
-    namespace: influxdb
+    namespace: kube-system
     server: https://kubernetes.default.svc
   project: home
   syncPolicy: {}
