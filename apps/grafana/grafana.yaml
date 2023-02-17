@@ -1,0 +1,43 @@
+#https://github.com/grafana/helm-charts/tree/main/charts/grafana
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: graana
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"  
+spec:
+  destination:
+    namespace: kube-system
+    server: https://kubernetes.default.svc
+  project: home
+  syncPolicy:
+    syncOptions:
+    - Replace=true
+  source:
+    chart: grafana
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: 6.50.7
+    helm:
+      version: v3
+      values: |-
+service:
+  enabled: true
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+  annotations: {}
+  labels: {}
+  portName: service
+  appProtocol: ""
+ingress:
+  enabled: true
+  annotations: {}
+    kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  labels: {}
+  path: /
+  pathType: Prefix
+  hosts:
+    - grafana.home
