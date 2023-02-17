@@ -56,24 +56,6 @@ spec:
               hosts:
                 - alertmanager.home
               path: /
-            config:
-              receivers:
-              - name: "null"
-              - name: slack
-                slack_configs:
-                - api_url: "${var.slack_url}"
-                  send_resolved: true
-                  title: "k3s-at-home"
-              route:
-                group_by: ['alertname']
-                group_wait: 45s 
-                group_interval: 10m
-                repeat_interval: 12h
-                routes:
-                - receiver: slack
-                  continue: true
-                  matchers:
-                  - severity="critical" 
           grafana:
             enabled: true
             namespaceOverride: ""
