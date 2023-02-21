@@ -55,7 +55,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "15"  
 spec:
   cron: "0 1 * * *"
-  task: "snapshot"
+  task: "backup"
   groups:
   - default
   retain: 4
