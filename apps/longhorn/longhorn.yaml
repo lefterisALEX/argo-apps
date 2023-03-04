@@ -9,7 +9,10 @@ spec:
     namespace: longhorn-system
     server: https://kubernetes.default.svc
   project: home
-  syncPolicy: {}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
   source:
     chart: longhorn
     repoURL: https://charts.longhorn.io
