@@ -15,8 +15,8 @@ spec:
     chart: metallb
     repoURL: https://metallb.github.io/metallb
     targetRevision: 0.13.7
-   syncPolicy:
-    automated:
-      selfHeal: true
-    syncOptions:
+  syncPolicy:
+   automated:
+     selfHeal: true
+     syncOptions:
       - CreateNamespace=true
