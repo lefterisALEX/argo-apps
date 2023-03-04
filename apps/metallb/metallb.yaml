@@ -11,6 +11,8 @@ kind: Application
 metadata:
   name: metallb
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/hook: PreSync
 spec:
   destination:
     namespace: metallb-system
