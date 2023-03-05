@@ -48,18 +48,3 @@ spec:
           backupTargetCredentialSecret: "aws-secret" 
           backupTarget: "s3://generic.backup@eu-central-1/longhorn-k3s-home/"
           
----
-apiVersion: longhorn.io/v1beta1
-kind: RecurringJob
-metadata:
-  name: daily-s3-backup
-  namespace: longhorn-system
-  annotations:
-    argocd.argoproj.io/hook: PostSync
-spec:
-  cron: "0 1 * * *"
-  task: "backup"
-  groups:
-  - default
-  retain: 4
-  concurrency: 2
