@@ -6,10 +6,10 @@ metadata:
   name: kube-prometheus-stack
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "1"  
+    argocd.argoproj.io/sync-wave: "3"  
 spec:
   destination:
-    namespace: kube-system
+    namespace: monitoring
     server: https://kubernetes.default.svc
   project: home
   syncPolicy:
@@ -19,6 +19,7 @@ spec:
    syncOptions:
     - Replace=true
     - ServerSideApply=true
+    - CreateNamespace=true
   source:
     chart: kube-prometheus-stack
     repoURL: https://prometheus-community.github.io/helm-charts
@@ -62,3 +63,30 @@ spec:
               path: /
           grafana:
             enabled: false
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus-crds
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: monitoring
+    server: https://kubernetes.default.svc
+  project: home
+  source:
+    path: charts/kube-prometheus-stack/crds
+    repoURL: https://github.com/prometheus-community/helm-charts
+    targetRevision: kube-prometheus-stack-45.5.0
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - Replace=true
+    automated:
+      selfHeal: true
+      prune: true
