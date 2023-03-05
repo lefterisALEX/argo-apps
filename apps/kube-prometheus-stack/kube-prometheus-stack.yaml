@@ -13,12 +13,11 @@ spec:
     server: https://kubernetes.default.svc
   project: home
   syncPolicy:
-   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-    - Replace=true
+   automated:
+     prune: true
+     selfHeal: true
+   syncOptions:
+   - Replace=true
   source:
     chart: kube-prometheus-stack
     repoURL: https://prometheus-community.github.io/helm-charts
