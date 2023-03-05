@@ -51,9 +51,9 @@ spec:
           metrics_path: /metrics
           scheme: http
       syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+        automated:
+          prune: true
+          selfHeal: true
 
 ---
 apiVersion: argoproj.io/v1alpha1
