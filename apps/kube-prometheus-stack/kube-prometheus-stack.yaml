@@ -25,7 +25,7 @@ spec:
     automated:
       selfHeal: true
       prune: true
-    helm:
+  helm:
       skipCrds: true
       values: |
         prometheus:
