@@ -1,88 +1,79 @@
 #https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+
 ---
+# installs whole kube-prometheus-stack which includes grafana and alert manager
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kube-prometheus-stack
+  name: prometheus-helm-chart
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "3"  
+    argocd.argoproj.io/sync-wave: "3"
 spec:
+  project: default
   destination:
+    server: "https://kubernetes.default.svc"
     namespace: monitoring
-    server: https://kubernetes.default.svc
-  project: home
-  syncPolicy:
-   automated:
-     prune: true
-     selfHeal: true
-   syncOptions:
-    - Replace=true
-    - ServerSideApply=true
-    - CreateNamespace=true
   source:
-    chart: kube-prometheus-stack
     repoURL: https://prometheus-community.github.io/helm-charts
-    targetRevision: 45.5.0
+    targetRevision: 43.1.0
+    chart: kube-prometheus-stack
     helm:
-      version: v3
-      values: |-
-          prometheus:
-            ingress:
-              enabled: true
-              ingressClassName: nginx
-              annotations: {}
-                # kubernetes.io/ingress.class: nginx
-                # kubernetes.io/tls-acme: "true"
-              labels: {}
-              hosts:
-                - prometheus.home
-              path: /
-            prometheusSpec:
-              additionalScrapeConfigs:
-              - job_name: iotstack
-                metrics_path: /metrics
-                static_configs:
-                  - targets:
-                    - 192.168.2.100:9100
-              - job_name: home_laptop
-                metrics_path: /metrics
-                static_configs:
-                  - targets:
-                    - 192.168.2.35:9100
-          alertmanager:
-            ingress:
-              enabled: true
-              ingressClassName: nginx
-              annotations: {}
-                # kubernetes.io/ingress.class: nginx
-                # kubernetes.io/tls-acme: "true"
-              labels: {}
-              hosts:
-                - alertmanager.home
-              path: /
-          grafana:
+      skipCrds: true
+      values: |
+        prometheus:
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            hosts:
+              - prometheus.home
+          prometheusSpec:
+            serviceMonitorSelectorNilUsesHelmValues: false
+          prometheusOperator:
+            namespaces:
+              releaseNamespace: true
+              additional:
+                - kube-system
+        alertmanager:
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            hosts:
+              - alertmanager.home
+        grafana:
+          ingress:
             enabled: false
+        scrape_configs:
+        - job_name: ingress
+          honor_timestamps: true
+          scrape_interval: 1m
+          scrape_timeout: 1m
+          metrics_path: /metrics
+          scheme: http
+      syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
 
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: prometheus-crds
+  name: prometheus-crd
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "2"
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
 spec:
+  project: default
   destination:
+    name: in-cluster
     namespace: monitoring
-    server: https://kubernetes.default.svc
-  project: home
   source:
-    path: charts/kube-prometheus-stack/crds
-    repoURL: https://github.com/prometheus-community/helm-charts
-    targetRevision: kube-prometheus-stack-45.5.0
+    repoURL: https://github.com/prometheus-community/helm-charts.git
+    path: charts/kube-prometheus-stack/crds/
+    targetRevision: kube-prometheus-stack-43.1.0
+    directory:
+      recurse: true
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
@@ -90,3 +81,96 @@ spec:
     automated:
       selfHeal: true
       prune: true
+
+
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: kube-prometheus-stack
+#   namespace: argocd
+#   annotations:
+#     argocd.argoproj.io/sync-wave: "3"  
+# spec:
+#   destination:
+#     namespace: monitoring
+#     server: https://kubernetes.default.svc
+#   project: home
+#   syncPolicy:
+#    automated:
+#      prune: true
+#      selfHeal: true
+#    syncOptions:
+#     - Replace=true
+#     - ServerSideApply=true
+#     - CreateNamespace=true
+#   source:
+#     chart: kube-prometheus-stack
+#     repoURL: https://prometheus-community.github.io/helm-charts
+#     targetRevision: 45.5.0
+#     helm:
+#       version: v3
+#       values: |-
+#           prometheus:
+#             ingress:
+#               enabled: true
+#               ingressClassName: nginx
+#               annotations: {}
+#                 # kubernetes.io/ingress.class: nginx
+#                 # kubernetes.io/tls-acme: "true"
+#               labels: {}
+#               hosts:
+#                 - prometheus.home
+#               path: /
+#             prometheusSpec:
+#               additionalScrapeConfigs:
+#               - job_name: iotstack
+#                 metrics_path: /metrics
+#                 static_configs:
+#                   - targets:
+#                     - 192.168.2.100:9100
+#               - job_name: home_laptop
+#                 metrics_path: /metrics
+#                 static_configs:
+#                   - targets:
+#                     - 192.168.2.35:9100
+#           alertmanager:
+#             ingress:
+#               enabled: true
+#               ingressClassName: nginx
+#               annotations: {}
+#                 # kubernetes.io/ingress.class: nginx
+#                 # kubernetes.io/tls-acme: "true"
+#               labels: {}
+#               hosts:
+#                 - alertmanager.home
+#               path: /
+#           grafana:
+#             enabled: false
+
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: prometheus-crds
+#   namespace: argocd
+#   annotations:
+#     argocd.argoproj.io/sync-wave: "2"
+#   finalizers:
+#     - resources-finalizer.argocd.argoproj.io
+# spec:
+#   destination:
+#     namespace: monitoring
+#     server: https://kubernetes.default.svc
+#   project: home
+#   source:
+#     path: charts/kube-prometheus-stack/crds
+#     repoURL: https://github.com/prometheus-community/helm-charts
+#     targetRevision: kube-prometheus-stack-45.5.0
+#   syncPolicy:
+#     syncOptions:
+#       - CreateNamespace=true
+#       - Replace=true
+#     automated:
+#       selfHeal: true
+#       prune: true
