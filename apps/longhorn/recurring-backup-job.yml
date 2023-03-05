@@ -3,7 +3,7 @@ apiVersion: longhorn.io/v1beta1
 kind: RecurringJob
 metadata:
   annotations:
-    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/sync-wave: "2"
   name: daily-s3-backup
   namespace: longhorn-system
 spec:
