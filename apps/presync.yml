@@ -4,7 +4,7 @@ metadata:
   name: pool-home-rg
   namespace: metallb-system
   annotations:
-    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook: PreSync
 spec:
   addresses:
   - 192.168.2.200-192.168.2.245
@@ -15,4 +15,4 @@ metadata:
   name: pool-home-rg
   namespace: metallb-system
   annotations:
-    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook: PreSync

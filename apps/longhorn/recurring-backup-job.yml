@@ -2,10 +2,10 @@
 apiVersion: longhorn.io/v1beta1
 kind: RecurringJob
 metadata:
-  name: daily-s3-backup
-  namespace: longhorn-system
   annotations:
     argocd.argoproj.io/hook: PostSync
+  name: daily-s3-backup
+  namespace: longhorn-system
 spec:
   cron: "0 1 * * *"
   task: "backup"
