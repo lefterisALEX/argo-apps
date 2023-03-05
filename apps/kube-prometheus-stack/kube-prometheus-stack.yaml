@@ -17,7 +17,7 @@ spec:
      prune: true
      selfHeal: true
    syncOptions:
-   - Replace=true
+    - Replace=true
   source:
     chart: kube-prometheus-stack
     repoURL: https://prometheus-community.github.io/helm-charts
