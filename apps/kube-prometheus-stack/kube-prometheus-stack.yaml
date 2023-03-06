@@ -1,229 +1,49 @@
+---
 #https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
-
----
-# installs whole kube-prometheus-stack which includes grafana and alert manager
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: prometheus-crd
+  name: kube-prometheus-stack
   namespace: argocd
-spec:
-  project: home
-  source:
-    repoURL: https://github.com/prometheus-community/helm-charts.git
-    path: charts/kube-prometheus-stack/crds/
-    targetRevision: kube-prometheus-stack-43.1.0
-    directory:
-      recurse: true
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: monitoring
-  syncPolicy:
-    automated:
-      prune: true
-    syncOptions:
-    - CreateNamespace=true
-    - Replace=true
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: prometheus
-  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
   finalizers:
-    - resources-finalizer.argocd.argoproj.io # cascade deletion on this App deletion
+  - resources-finalizer.argocd.argoproj.io
 spec:
   project: home
   source:
-    chart: kube-prometheus-stack
-    repoURL: https://prometheus-community.github.io/helm-charts
-    targetRevision: 43.1.0
+    repoURL: 'https://prometheus-community.github.io/helm-charts'
+    targetRevision: 41.7.4
     helm:
-      releaseName: prometheus
       skipCrds: true
       values: |
-        defaultRules:
-          create: true
-          rules:
-            kubeProxy: false
-        grafana:
-          defaultDashboardsTimezone: Asia/Tokyo
-          plugins:
-            - grafana-piechart-panel
-          grafana.ini:
-            server:
-              domain: localhost
-              root_url: '%(protocol)s://%(domain)s:%(http_port)s'
-              enforce_domain: false
-            log:
-              level: warn
-            date_formats:
-              default_timezone: Asia/Tokyo
-            security:
-              cookie_secure: false
-              strict_transport_security: true
-              content_security_policy: true
-          securityContext:
-            runAsUser: 0
-            runAsGroup: 0
-            runAsNonRoot: false
-            fsGroup: 472
-          deploymentStrategy:
-            type: Recreate
-          persistence:
-            enabled: true
-            size: 10Gi
-          datasources:
-            datasources.yaml:
-              apiVersion: 1
-              datasources:
-                - name: Prometheus
-                  type: prometheus
-                  url: http://prometheus-kube-prometheus-prometheus:9090
-                  isDefault: true
-                - name: Loki
-                  type: loki
-                  url: http://loki:3100
-                  isDefault: false
+        alertmanager:
+          config:
+            route:
+              group_by: ['namespace']
+              group_wait: 30s
+              group_interval: 5m
+              repeat_interval: 12h
+              receiver: default
+              routes:
+              - receiver: default
+                matchers:
+                  - alertname =~ "InfoInhibitor|Watchdog"
         prometheus:
           prometheusSpec:
+            retention: 5d
             storageSpec:
               volumeClaimTemplate:
                 spec:
+                  accessModes: ["ReadWriteOnce"]
                   resources:
                     requests:
                       storage: 50Gi
-            resources:
-              requests:
-                memory: 2Gi
-            securityContext:
-              runAsGroup: 0
-              runAsNonRoot: false
-              runAsUser: 0
-              fsGroup: 2000
-        alertmanager:
-          alertmanagerSpec:
-            storage:
-              volumeClaimTemplate:
-                spec:
-                  resources:
-                    requests:
-                      storage: 20Gi
-            securityContext:
-              runAsGroup: 0
-              runAsNonRoot: false
-              runAsUser: 0
-              fsGroup: 2000
-        kubeProxy:
-          enabled: false
-        kubeEtcd:
-          endpoints:
-            - 172.16.17.11
-            - 172.16.17.12
-            - 172.16.17.13
-          service:
-            enabled: true
-            port: 2381
-            targetPort: 2381
+    chart: kube-prometheus-stack
   destination:
-    server: https://kubernetes.default.svc
+    server: 'https://kubernetes.default.svc'
     namespace: monitoring
   syncPolicy:
     automated:
       prune: true
-    syncOptions:
-    - CreateNamespace=true
-
-
-
-# ---
-# apiVersion: argoproj.io/v1alpha1
-# kind: Application
-# metadata:
-#   name: kube-prometheus-stack
-#   namespace: argocd
-#   annotations:
-#     argocd.argoproj.io/sync-wave: "3"  
-# spec:
-#   destination:
-#     namespace: monitoring
-#     server: https://kubernetes.default.svc
-#   project: home
-#   syncPolicy:
-#    automated:
-#      prune: true
-#      selfHeal: true
-#    syncOptions:
-#     - Replace=true
-#     - ServerSideApply=true
-#     - CreateNamespace=true
-#   source:
-#     chart: kube-prometheus-stack
-#     repoURL: https://prometheus-community.github.io/helm-charts
-#     targetRevision: 45.5.0
-#     helm:
-#       version: v3
-#       values: |-
-#           prometheus:
-#             ingress:
-#               enabled: true
-#               ingressClassName: nginx
-#               annotations: {}
-#                 # kubernetes.io/ingress.class: nginx
-#                 # kubernetes.io/tls-acme: "true"
-#               labels: {}
-#               hosts:
-#                 - prometheus.home
-#               path: /
-#             prometheusSpec:
-#               additionalScrapeConfigs:
-#               - job_name: iotstack
-#                 metrics_path: /metrics
-#                 static_configs:
-#                   - targets:
-#                     - 192.168.2.100:9100
-#               - job_name: home_laptop
-#                 metrics_path: /metrics
-#                 static_configs:
-#                   - targets:
-#                     - 192.168.2.35:9100
-#           alertmanager:
-#             ingress:
-#               enabled: true
-#               ingressClassName: nginx
-#               annotations: {}
-#                 # kubernetes.io/ingress.class: nginx
-#                 # kubernetes.io/tls-acme: "true"
-#               labels: {}
-#               hosts:
-#                 - alertmanager.home
-#               path: /
-#           grafana:
-#             enabled: false
-
-# ---
-# apiVersion: argoproj.io/v1alpha1
-# kind: Application
-# metadata:
-#   name: prometheus-crds
-#   namespace: argocd
-#   annotations:
-#     argocd.argoproj.io/sync-wave: "2"
-#   finalizers:
-#     - resources-finalizer.argocd.argoproj.io
-# spec:
-#   destination:
-#     namespace: monitoring
-#     server: https://kubernetes.default.svc
-#   project: home
-#   source:
-#     path: charts/kube-prometheus-stack/crds
-#     repoURL: https://github.com/prometheus-community/helm-charts
-#     targetRevision: kube-prometheus-stack-45.5.0
-#   syncPolicy:
-#     syncOptions:
-#       - CreateNamespace=true
-#       - Replace=true
-#     automated:
-#       selfHeal: true
-#       prune: true
+      selfHeal: true
