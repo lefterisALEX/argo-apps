@@ -1,5 +1,5 @@
 #https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
-iapiVersion: argoproj.io/v1alpha1
+apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: kube-prometheus-stack-crds
