@@ -32,3 +32,5 @@ spec:
             size: 30Gi
             mountPath: /var/lib/influxdb2
             subPath: ""
+            useExisting: false
+            name:
