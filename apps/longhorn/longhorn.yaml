@@ -13,8 +13,8 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
+    # syncOptions:
+    #   - CreateNamespace=true
   source:
     chart: longhorn
     repoURL: https://charts.longhorn.io
